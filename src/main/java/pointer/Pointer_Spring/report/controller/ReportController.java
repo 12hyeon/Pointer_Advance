@@ -3,23 +3,18 @@ package pointer.Pointer_Spring.report.controller;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 import pointer.Pointer_Spring.common.response.BaseResponse;
-import pointer.Pointer_Spring.report.domain.Report;
-import pointer.Pointer_Spring.report.domain.UserReport;
 import pointer.Pointer_Spring.report.dto.ReportDto;
 import pointer.Pointer_Spring.report.enumeration.ReportType;
 import pointer.Pointer_Spring.report.service.ReportService;
 import pointer.Pointer_Spring.security.CurrentUser;
 import pointer.Pointer_Spring.security.UserPrincipal;
 import pointer.Pointer_Spring.user.service.AuthService;
-import pointer.Pointer_Spring.user.service.UserService;
 import pointer.Pointer_Spring.validation.ExceptionCode;
-import pointer.Pointer_Spring.vote.dto.VoteDto;
 
 import java.util.List;
-import java.util.Optional;
 
-@RestController("/api/v1")
-@RequestMapping
+@RestController
+@RequestMapping("/api/v1/reports")
 @RequiredArgsConstructor
 public class ReportController {
 

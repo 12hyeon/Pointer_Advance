@@ -1,11 +1,9 @@
 package pointer.Pointer_Spring.vote.controller;
 
-import lombok.Getter;
 import org.springframework.web.bind.annotation.*;
 import pointer.Pointer_Spring.common.response.BaseResponse;
 import pointer.Pointer_Spring.security.CurrentUser;
 import pointer.Pointer_Spring.security.UserPrincipal;
-import pointer.Pointer_Spring.user.domain.User;
 import pointer.Pointer_Spring.vote.dto.VoteDto;
 import pointer.Pointer_Spring.vote.service.VoteServiceImpl;
 
@@ -13,8 +11,7 @@ import javax.validation.Valid;
 import java.util.List;
 
 @RestController
-@RequestMapping("api/v1/votes")
-//@CrossOrigin(origins = "http://localhost:3000")
+@RequestMapping("/api/v1/votes")
 public class VoteController {
 
     private final VoteServiceImpl voteService;

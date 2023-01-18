@@ -4,7 +4,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import pointer.Pointer_Spring.point.dto.VersionPointDto;
 import pointer.Pointer_Spring.point.service.VersionPointService;
 import pointer.Pointer_Spring.security.CurrentUser;
 import pointer.Pointer_Spring.security.UserPrincipal;
@@ -13,6 +12,7 @@ import pointer.Pointer_Spring.security.UserPrincipal;
 @RequestMapping("/api/v1/points")
 @RequiredArgsConstructor
 public class VersionPointController {
+
     private final VersionPointService versionPointService;
 
     /*// 저장
