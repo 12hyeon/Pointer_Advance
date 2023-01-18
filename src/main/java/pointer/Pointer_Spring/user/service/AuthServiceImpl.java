@@ -54,7 +54,7 @@ import java.util.concurrent.ThreadLocalRandom;
 @Service
 @Transactional
 @RequiredArgsConstructor
-@PropertySource("classpath:application.properties")
+@PropertySource("classpath:application.yml")
 public class AuthServiceImpl implements AuthService {
     private static final Integer STATUS = 1;
 

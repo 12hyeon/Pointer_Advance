@@ -30,7 +30,7 @@ import pointer.Pointer_Spring.validation.ExceptionCode;
 import java.util.Optional;
 
 @Service
-@PropertySource("classpath:application.properties")
+@PropertySource("classpath:application.yml")
 public class AppleAuthServiceImpl {
 
     private final AppleJwtUtils appleJwtUtils;
