@@ -1,7 +1,9 @@
 package pointer.Pointer_Spring.friend.service;
 
 import lombok.RequiredArgsConstructor;
-import org.aspectj.asm.internal.Relationship;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.CachePut;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
@@ -25,9 +27,12 @@ import pointer.Pointer_Spring.user.repository.UserRepository;
 import pointer.Pointer_Spring.validation.CustomException;
 import pointer.Pointer_Spring.validation.ExceptionCode;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
 
-
+@Slf4j
 @Service
 @Transactional
 @RequiredArgsConstructor
@@ -171,7 +176,87 @@ public class FriendServiceImpl implements FriendService {
         }
 
         User user = userRepository.findByUserIdAndStatus(userPrincipal.getId(), STATUS).get();
-        return new FriendDto.FriendInfoListResponse(ExceptionCode.FRIEND_SEARCH_OK, user.getName(), total, friendInfoList, lastPage);
+        return new FriendDto.FriendInfoListResponse(ExceptionCode.FRIEND_SEARCH_OK,
+                user.getName(), total, friendInfoList, lastPage);
+    }
+
+    /**
+     * 검색어를 통한 친구 목록 조회
+     * @param userPrincipal 유저 본인
+     * @param targetId 유저 id
+     * @param keyword 검색어
+     * @param lastPage 현재 페이지
+     * @return 친구 목록
+     */
+    // 기본 친구 목록의 첫 페이지에 캐싱 적용 -> key : targetId
+    @Cacheable(value = "FriendsListCache",  cacheManager = "redisCacheManager",
+            key = "#targetId", condition = "#keyword == null and #lastPage == 0")
+    public FriendDto.FriendInfoListResponse getUserFriendList2(UserPrincipal userPrincipal,
+                                                               Long targetId, String keyword, int lastPage) {
+
+        User findUser = userRepository.findByUserIdAndStatus(targetId, STATUS).orElseThrow(
+                () -> {
+                    throw new CustomException(ExceptionCode.USER_NOT_FOUND);
+                }
+        );
+
+        List<FriendDto.FriendInfoList> friendInfoList = new ArrayList<>();
+        Long total;
+
+        if (userPrincipal.getId().equals(targetId)) {
+            List<Friend> objects = fetchPagesOffsetUserFriend(findUser, keyword, lastPage);
+
+            for (Friend friend : objects) {
+                User user = userRepository.findByUserIdAndStatus(friend.getUserFriendId(), STATUS).get();
+                Optional<Image> image = imageRepository.findByUserUserIdAndImageSortAndStatus(user.getUserId(), PROFILE_TYPE, STATUS);
+
+                if (image.isPresent()) {
+                    friendInfoList.add(new FriendDto.FriendInfoList(user, friend.getRelationship())
+                            .setFile(image.get().getImageUrl()));
+                } else {
+                    friendInfoList.add(new FriendDto.FriendInfoList(user, friend.getRelationship()));
+                }
+            }
+            total = friendRepository.countUsersByFriendCriteria(targetId, keyword, STATUS);
+
+        } else {
+            List<Friend> objects = fetchPagesOffsetTargetFriend(findUser, keyword, lastPage, userPrincipal.getId());
+
+            for (Friend friend : objects) {
+                User user = userRepository.findByUserIdAndStatus(friend.getUserFriendId(), STATUS).get();
+                Optional<Image> image = imageRepository.findByUserUserIdAndImageSortAndStatus(user.getUserId(), PROFILE_TYPE, STATUS);
+
+                // 나 - 친구의 친구 관계
+                Friend.Relation relationship;
+                if (user.getUserId().equals(userPrincipal.getId())) {
+                    relationship = Friend.Relation.ME;
+                } else {
+                    Optional<Friend> optionalFriend = friendRepository.findByUserUserIdAndUserFriendIdAndStatus(userPrincipal.getId(), user.getUserId(), STATUS);
+
+                    if (optionalFriend.isEmpty()) {
+                        relationship = Friend.Relation.NONE;
+                    } else {
+                        relationship = optionalFriend.get().getRelationship();
+                    }
+                }
+
+                if (image.isPresent()) {
+                    friendInfoList.add(new FriendDto.FriendInfoList(user, relationship).setFile(image.get().getImageUrl()));
+                } else {
+                    friendInfoList.add(new FriendDto.FriendInfoList(user, relationship));
+                }
+            }
+            total = friendRepository.countTargetByFriendCriteria(targetId, keyword, userPrincipal.getId(), STATUS);
+        }
+
+        User user = userRepository.findByUserIdAndStatus(userPrincipal.getId(), STATUS).get();
+        FriendDto.FriendInfoListResponse result = new FriendDto.FriendInfoListResponse(
+                ExceptionCode.FRIEND_SEARCH_OK, user.getName(), total, friendInfoList,
+                lastPage);
+
+        // 친구 목록의 첫 페이지에 캐싱 적용
+        log.info("Cache key: " + targetId.toString());
+        return result;
     }
 
     @Override
@@ -192,7 +277,8 @@ public class FriendServiceImpl implements FriendService {
 
         User user = userRepository.findByUserIdAndStatus(userPrincipal.getId(), STATUS).get();
         Long total = friendRepository.countUsersByBlockFriendCriteria(userPrincipal.getId(), keyword, STATUS);
-        return new FriendDto.FriendInfoListResponse(ExceptionCode.FRIEND_BLOCK_SEARCH_OK, user.getName(), total, friendInfoList, lastPage);
+        return new FriendDto.FriendInfoListResponse(ExceptionCode.FRIEND_BLOCK_SEARCH_OK,
+                user.getName(), total, friendInfoList, lastPage);
     }
 
     // 조회
@@ -284,6 +370,8 @@ public class FriendServiceImpl implements FriendService {
     }
 
     @Override
+    @CachePut(value = "FriendsListCache",  cacheManager = "redisCacheManager",
+            key = "#targetId", condition = "#keyword == null and #lastPage == 0")
     public ResponseFriend acceptFriend(UserPrincipal userPrincipal, FriendDto.RequestFriendDto dto) {
         Friend findFriendUser = friendRepository.findByUserUserIdAndUserFriendIdAndStatus(userPrincipal.getId(), dto.getMemberId(), STATUS)
                 .orElseThrow(() -> {
@@ -351,6 +439,8 @@ public class FriendServiceImpl implements FriendService {
 
     @Override
     @Transactional
+    @CachePut(value = "FriendsListCache",  cacheManager = "redisCacheManager",
+            key = "#targetId", condition = "#keyword == null and #lastPage == 0")
     public ResponseFriend blockFriend(UserPrincipal userPrincipal, FriendDto.RequestFriendDto dto) {
         Optional<Friend> findFriendUser = friendRepository
                 .findByUserUserIdAndUserFriendIdAndStatus(userPrincipal.getId(), dto.getMemberId(), STATUS);
@@ -415,6 +505,8 @@ public class FriendServiceImpl implements FriendService {
     }
 
     @Override
+    @CachePut(value = "FriendsListCache",  cacheManager = "redisCacheManager",
+            key = "#targetId", condition = "#keyword == null and #lastPage == 0")
     public ResponseFriend cancelRequest(UserPrincipal userPrincipal, FriendDto.RequestFriendDto dto) {
         Friend findFriendUser = friendRepository.findByUserUserIdAndUserFriendIdAndStatus(userPrincipal.getId(), dto.getMemberId(), STATUS)
                 .orElseThrow(() -> {

@@ -6,6 +6,7 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -475,6 +476,8 @@ public class AuthServiceImpl implements AuthService {
 
     @Transactional
     @Override
+    @CacheEvict(value = "FriendsListCache",  cacheManager = "redisCacheManager",
+            key = "#targetId", condition = "#keyword == null and #lastPage == 0")
     public Object resign(UserPrincipal userPrincipal) {
 
         User user = userRepository.findByUserIdAndStatus(userPrincipal.getId(),STATUS).get();
