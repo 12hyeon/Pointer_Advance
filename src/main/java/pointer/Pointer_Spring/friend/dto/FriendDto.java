@@ -1,11 +1,12 @@
 package pointer.Pointer_Spring.friend.dto;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
 import lombok.Getter;
 import pointer.Pointer_Spring.config.ResponseType;
 import pointer.Pointer_Spring.friend.domain.Friend;
-import pointer.Pointer_Spring.room.dto.RoomDto;
 import pointer.Pointer_Spring.user.domain.User;
 import pointer.Pointer_Spring.validation.ExceptionCode;
 
@@ -39,7 +40,12 @@ public class FriendDto {
         Long total;
         int currentPage;
 
-        public FriendInfoListResponse(ExceptionCode exceptionCode,  String name, Long total, List<FriendInfoList> friendInfoList, int currentPage) {
+        @JsonCreator
+        public FriendInfoListResponse(@JsonProperty("exceptionCode") ExceptionCode exceptionCode,
+                                      @JsonProperty("name") String name,
+                                      @JsonProperty("total") Long total,
+                                      @JsonProperty("friendInfoList") List<FriendInfoList> friendInfoList,
+                                      @JsonProperty("currentPage") int currentPage) {
             super(exceptionCode);
             this.total = total;
             this.name = name;
@@ -95,11 +101,35 @@ public class FriendDto {
     @Data
     public static class FriendInfoList {
 
-        Long friendId;
-        String id;
-        String friendName;
-        String file;
-        int relationship;
+        private Long friendId;
+        private String id;
+        private String friendName;
+        private String file;
+        private int relationship;
+
+        @JsonCreator
+        public FriendInfoList(@JsonProperty("friendId") Long friendId,
+                              @JsonProperty("id") String id,
+                              @JsonProperty("friendName") String friendName,
+                              @JsonProperty("file") String file,
+                              @JsonProperty("relationship") int relationship) {
+            this.friendId = friendId;
+            this.id = id;
+            this.friendName = friendName;
+            this.file = file;
+            this.relationship = relationship;
+        }
+
+        @JsonCreator
+        public FriendInfoList(@JsonProperty("friendId") Long friendId,
+                              @JsonProperty("id") String id,
+                              @JsonProperty("friendName") String friendName,
+                              @JsonProperty("relationship") int relationship) {
+            this.friendId = friendId;
+            this.id = id;
+            this.friendName = friendName;
+            this.relationship = relationship;
+        }
 
         public FriendInfoList(User user, Friend.Relation relationship) {
             this.friendId = user.getUserId();
