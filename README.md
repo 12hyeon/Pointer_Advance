@@ -18,6 +18,9 @@ POINTER는 10대를 위한 소통 플랫폼입니다. <br>
 모든 멤버가 투표를 완료 후, 투표 결과를 포인트를 통해 투표한 사람의 힌트 확인이 가능합니다.<br>
 <br/>
 
+![image](https://github.com/12hyeon/Pointer_Advance/assets/67951802/9edaa87f-332c-4074-af4b-bdf3a6e18c70)
+
+
 ## 사용기술
 
 ### 개발환경
