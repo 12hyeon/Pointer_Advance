@@ -32,6 +32,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 public class QuestionServiceImpl implements QuestionService {
@@ -206,7 +207,7 @@ public class QuestionServiceImpl implements QuestionService {
                         .userId(m.getUser().getUserId())
                         .nickname(m.getUser().getName())
                         .build())
-                .toList();
+                .collect(Collectors.toList());
 
 
         return QuestionDto.GetCurrentResponse.builder()
