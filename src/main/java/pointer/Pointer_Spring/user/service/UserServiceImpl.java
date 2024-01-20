@@ -1,9 +1,9 @@
 package pointer.Pointer_Spring.user.service;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.validation.annotation.Validated;
 import pointer.Pointer_Spring.friend.domain.Friend;
 import pointer.Pointer_Spring.friend.repository.FriendRepository;
 import pointer.Pointer_Spring.security.UserPrincipal;
@@ -14,8 +14,10 @@ import pointer.Pointer_Spring.user.response.ResponseUser;
 import pointer.Pointer_Spring.validation.CustomException;
 import pointer.Pointer_Spring.validation.ExceptionCode;
 
+import java.util.List;
 import java.util.Optional;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class UserServiceImpl implements UserService {
@@ -36,16 +38,54 @@ public class UserServiceImpl implements UserService {
         return new ResponseUser(ExceptionCode.USER_GET_OK, user.getPoint());
     }
 
+    /**
+     * 유저 name 변경
+     * @param userId 유저 id
+     * @param userNm 유저 name
+     * @return 성공 여부 코드
+     */
     @Override
     @Transactional
     public ResponseUser updateNm(Long userId, String userNm){
+        log.info("update name method");
         User user = userRepository.findByUserId(userId).orElseThrow(
                 () -> {
                     throw new CustomException(ExceptionCode.USER_NOT_FOUND);
                 }
         );
         friendRepository.findAllByUserFriendId(userId).stream().forEach(
-                ((friend) -> friend.setFriendName(userNm)));
+                ((friend) -> friend.setFriendName(userNm))); // 변경 감지에 따라 자동 update 쿼리문
+        user.changeName(userNm);
+        return new ResponseUser(ExceptionCode.USER_UPDATE_OK);
+    }
+
+    /**
+     * Batch를 이용한 유저 name 변경
+     * @param userId 유저 id
+     * @param userNm 유저 name
+     * @return 성공 여부 코드
+     */
+    @Override
+    @Transactional
+    public ResponseUser updateNmBatch(Long userId, String userNm){
+        log.info("batch 사용한 update name method");
+        User user = userRepository.findByUserId(userId).orElseThrow(
+                () -> {
+                    throw new CustomException(ExceptionCode.USER_NOT_FOUND);
+                }
+        );
+
+        // 변경이 필요한 칼럼 목록
+        List<Friend> friends = friendRepository.findAllByUserFriendId(userId);
+
+        int batchSize = 100;  // batch 크기 설정
+        for (int i = 0; i < friends.size(); i += batchSize) {
+            int endIdx = Math.min(i + batchSize, friends.size());
+            List<Friend> batch = friends.subList(i, endIdx);
+            batch.forEach(friend -> friend.setFriendName(userNm));
+            friendRepository.saveAll(batch); // 일괄 처리
+        }
+
         user.changeName(userNm);
         return new ResponseUser(ExceptionCode.USER_UPDATE_OK);
     }

@@ -231,12 +231,22 @@ public class UserDto {
         }
 
     }
+
     @Getter
     public static class UpdateIdRequest {
         private String id;
         public UpdateIdRequest(){}
         public UpdateIdRequest(String id){
             this.id = id;
+        }
+    }
+
+    @Getter
+    public static class UpdateNameRequest {
+        private String name;
+        public UpdateNameRequest(){}
+        public UpdateNameRequest(String name) {
+            this.name = name;
         }
     }
 
