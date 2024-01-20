@@ -13,7 +13,6 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/v1/questions")
-//@CrossOrigin(origins = "http://localhost:3000")
 public class QuestionController {
 
     private final QuestionServiceImpl questionService;

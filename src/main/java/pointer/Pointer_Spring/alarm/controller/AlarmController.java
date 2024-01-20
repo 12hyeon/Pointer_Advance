@@ -11,7 +11,7 @@ import pointer.Pointer_Spring.security.UserPrincipal;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/v1/alarm")
+@RequestMapping("/api/v1/alarms")
 //@CrossOrigin(origins = "http://localhost:3000")
 public class AlarmController {
 
