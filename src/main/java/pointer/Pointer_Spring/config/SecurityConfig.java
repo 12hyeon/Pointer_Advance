@@ -39,6 +39,13 @@ public class SecurityConfig {
     private final JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint;
     private final JwtAccessDeniedHandler jwtAccessDeniedHandler;
 
+    private static final String[] DEFAULT_LIST = { // swagger 관련 형식
+            "/", "/api*", "/api-docs/**", "/swagger-ui/**", "/api-docs/swagger-config",
+            "/v2/api-docs", "/configuration/ui", "/swagger-resources/**",
+            "/configuration/security", "/swagger-ui.html", "/webjars/**", "/swagger/**",
+            "/error", "/v3/api-docs/**"
+    };
+
 
 /*    @Autowired
     private CustomOAuth2UserService customOAuth2UserService;*/
@@ -106,8 +113,8 @@ public class SecurityConfig {
                         "/**/*.css",
                         "/**/*.js")
                         .permitAll()
-                    .antMatchers("/auth/**", "/oauth2/**")
-                        .permitAll()
+                .antMatchers(DEFAULT_LIST).permitAll()
+                    .antMatchers("**/auth/**", "**/oauth2/**").permitAll()
                     .anyRequest()
                         .authenticated()
                     .and()
