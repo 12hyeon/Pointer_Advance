@@ -47,7 +47,7 @@ public class UserServiceImpl implements UserService {
     @Override
     @Transactional
     public ResponseUser updateNm(Long userId, String userNm){
-        log.info("update name method");
+        //log.info("1) update name method");
         User user = userRepository.findByUserId(userId).orElseThrow(
                 () -> {
                     throw new CustomException(ExceptionCode.USER_NOT_FOUND);
@@ -68,7 +68,7 @@ public class UserServiceImpl implements UserService {
     @Override
     @Transactional
     public ResponseUser updateNmBatch(Long userId, String userNm){
-        log.info("batch 사용한 update name method");
+        //log.info("2) batch 사용한 update name method");
         User user = userRepository.findByUserId(userId).orElseThrow(
                 () -> {
                     throw new CustomException(ExceptionCode.USER_NOT_FOUND);
