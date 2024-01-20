@@ -14,6 +14,8 @@ import pointer.Pointer_Spring.user.service.CloudinaryService;
 import pointer.Pointer_Spring.user.service.UserService;
 import pointer.Pointer_Spring.validation.ExceptionCode;
 
+import javax.validation.Valid;
+
 @RestController
 @RequestMapping("/api/v1/users")
 @RequiredArgsConstructor
@@ -59,6 +61,12 @@ public class UserController {
                                                         @RequestParam String keyword,
                                                         @RequestParam int lastPage) {
         return friendService.getUserInfoList(userPrincipal, keyword, lastPage);
+    }
+
+    @PatchMapping("/update/name") // 이름 수정 : 중복 가능
+    public ResponseUser updateUserName(@CurrentUser UserPrincipal userPrincipal,
+                                     @Valid @RequestBody UserDto.UpdateNameRequest updateNameRequest) {
+        return userService.updateNm(userPrincipal.getId(), updateNameRequest.getName());
     }
 
     @GetMapping("/get/points")
