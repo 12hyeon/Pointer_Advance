@@ -9,13 +9,11 @@ import pointer.Pointer_Spring.user.response.ResponseImage;
 import pointer.Pointer_Spring.user.service.CloudinaryService;
 import pointer.Pointer_Spring.validation.ExceptionCode;
 
-import java.io.IOException;
-
 @RestController
-@RequestMapping("api/v1/image")
+@RequestMapping("/api/v1/images")
 @RequiredArgsConstructor
-//@CrossOrigin(origins = "http://localhost:3000")
 public class ImageController {
+
     private final CloudinaryService cloudinaryService;
 
     @GetMapping("/get")

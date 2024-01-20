@@ -3,7 +3,6 @@ package pointer.Pointer_Spring.swagger;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.Authorization;
-import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -14,10 +13,9 @@ import org.springframework.web.bind.annotation.*;
 import java.util.HashMap;
 import java.util.Map;
 
-//Controller
 @RestController
-
 public class SwaggerController {
+
     @GetMapping(value = "/hello")
     @ApiOperation(value = "hello, world api", notes = "hello world swagger check",  authorizations = {@Authorization(value = "JWT") })
     public String hellowWorld(){

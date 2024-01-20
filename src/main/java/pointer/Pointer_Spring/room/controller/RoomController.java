@@ -6,7 +6,6 @@ import io.swagger.annotations.ApiOperation;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
-import pointer.Pointer_Spring.friend.dto.FriendDto;
 import pointer.Pointer_Spring.friend.service.FriendService;
 import pointer.Pointer_Spring.room.dto.RoomDto;
 import pointer.Pointer_Spring.room.dto.RoomMemberDto;
@@ -20,8 +19,7 @@ import java.security.NoSuchAlgorithmException;
 @Controller
 @ResponseBody
 @RequiredArgsConstructor
-@RequestMapping("/room")
-//@CrossOrigin(origins = "http://localhost:3000")
+@RequestMapping("/api/v1/rooms")
 public class RoomController {
 
     private final RoomService roomService;
