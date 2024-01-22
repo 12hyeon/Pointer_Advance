@@ -3,22 +3,17 @@ package pointer.Pointer_Spring.security;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.jsonwebtoken.*;
-import io.jsonwebtoken.security.WeakKeyException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
+import org.springframework.util.PatternMatchUtils;
 import org.springframework.util.StringUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
 import pointer.Pointer_Spring.config.AppProperties;
-import pointer.Pointer_Spring.user.dto.UserDto;
 import pointer.Pointer_Spring.validation.ExceptionCode;
 
 import javax.servlet.FilterChain;
@@ -36,6 +31,10 @@ public class TokenAuthenticationFilter extends OncePerRequestFilter {
     @Autowired
     private CustomUserDetailsService customUserDetailsService;
 
+    private static final String[] WHITE_LIST = { // auth 관련 형식
+            "/api/v1/auth/**"
+    };
+
     @Autowired
     private AppProperties appProperties;
 
@@ -45,7 +44,7 @@ public class TokenAuthenticationFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws IOException {
         try {
             String jwt = getJwtFromRequest(request);
-            if (StringUtils.hasText(jwt)) {
+            if (isFilterCheck(request.getRequestURI()) && StringUtils.hasText(jwt)) {
                 if (tokenProvider.isTokenExpired(jwt)) {
                     createResponse(ExceptionCode.EXPIRED_JWT_TOKEN, response);
                 } else {
@@ -93,6 +92,12 @@ public class TokenAuthenticationFilter extends OncePerRequestFilter {
         return null;
     }
 
+    /**
+     * 인증 관련 응답 형식 생성
+     * @param exceptionCode 예외 코드
+     * @param response 서블릿 객체
+     * @throws IOException 예외
+     */
     private void createResponse(ExceptionCode exceptionCode, ServletResponse response) throws IOException {
         ObjectNode json = new ObjectMapper().createObjectNode();
         json.put("state", HttpServletResponse.SC_UNAUTHORIZED); // exceptionCode.getStatus().getValue()
@@ -107,5 +112,14 @@ public class TokenAuthenticationFilter extends OncePerRequestFilter {
         response.setCharacterEncoding("UTF-8");
         response.setContentLength(newResponse.getBytes(StandardCharsets.UTF_8).length);
         response.getWriter().write(newResponse);
+    }
+
+    /**
+     * 화이트 리스트에 포함되어 인증이 필요한지
+     * @param requestURI 요청 받은 uri
+     * @return 인증 필요 여부
+     */
+    private boolean isFilterCheck(String requestURI) {
+        return !PatternMatchUtils.simpleMatch(WHITE_LIST, requestURI);
     }
 }
