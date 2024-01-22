@@ -31,8 +31,9 @@ public class FriendDto {
     }
 
     @Getter
-    public static class FriendInfoListResponse extends ResponseType {
+    public static class FriendInfoListResponse {
 
+        ExceptionCode exceptionCode;
         List<FriendInfoList> friendInfoList;
 
         @JsonInclude(JsonInclude.Include.NON_NULL)
@@ -46,14 +47,15 @@ public class FriendDto {
                                       @JsonProperty("total") Long total,
                                       @JsonProperty("friendInfoList") List<FriendInfoList> friendInfoList,
                                       @JsonProperty("currentPage") int currentPage) {
-            super(exceptionCode);
+            this.exceptionCode = exceptionCode;
             this.total = total;
             this.name = name;
             this.friendInfoList = friendInfoList;
             this.currentPage = currentPage;
         }
+
         public FriendInfoListResponse(ExceptionCode exceptionCode, List<FriendInfoList> friendInfoList) {
-            super(exceptionCode);
+            this.exceptionCode = exceptionCode;
             this.friendInfoList = friendInfoList;
         }
     }
@@ -117,17 +119,6 @@ public class FriendDto {
             this.id = id;
             this.friendName = friendName;
             this.file = file;
-            this.relationship = relationship;
-        }
-
-        @JsonCreator
-        public FriendInfoList(@JsonProperty("friendId") Long friendId,
-                              @JsonProperty("id") String id,
-                              @JsonProperty("friendName") String friendName,
-                              @JsonProperty("relationship") int relationship) {
-            this.friendId = friendId;
-            this.id = id;
-            this.friendName = friendName;
             this.relationship = relationship;
         }
 

@@ -130,20 +130,7 @@ public class FriendServiceImpl implements FriendService {
         Long total;
 
         if (userPrincipal.getId().equals(targetId)) {
-            List<Friend> objects = fetchPagesOffsetUserFriend(findUser, keyword, lastPage);
-
-            for (Friend friend : objects) {
-                User user = userRepository.findByUserIdAndStatus(friend.getUserFriendId(), STATUS).get();
-                Optional<Image> image = imageRepository.findByUserUserIdAndImageSortAndStatus(user.getUserId(), PROFILE_TYPE, STATUS);
-
-                if (image.isPresent()) {
-                    friendInfoList.add(new FriendDto.FriendInfoList(user, friend.getRelationship())
-                            .setFile(image.get().getImageUrl()));
-                } else {
-                    friendInfoList.add(new FriendDto.FriendInfoList(user, friend.getRelationship()));
-                }
-            }
-            total = friendRepository.countUsersByFriendCriteria(targetId, keyword, STATUS);
+            return getMyFriendList(findUser, targetId, keyword, lastPage);
 
         } else {
             List<Friend> objects = fetchPagesOffsetTargetFriend(findUser, keyword, lastPage, userPrincipal.getId());
@@ -181,16 +168,48 @@ public class FriendServiceImpl implements FriendService {
     }
 
     /**
-     * 검색어를 통한 친구 목록 조회
+     * 검색 기준이 본인인 경우
+     * @param findUser 검색한 유저
+     * @param keyword 검색어
+     * @param lastPage 현재 페이지
+     * @return 친구 목록
+     */
+    private FriendDto.FriendInfoListResponse getMyFriendList(
+            User findUser, Long targetId, String keyword, int lastPage) {
+        List<Friend> objects = fetchPagesOffsetUserFriend(findUser, keyword, lastPage);
+
+        List<FriendDto.FriendInfoList> friendInfoList = new ArrayList<>();
+        Long total;
+
+        for (Friend friend : objects) {
+            User user = userRepository.findByUserIdAndStatus(friend.getUserFriendId(), STATUS).get();
+            Optional<Image> image = imageRepository.findByUserUserIdAndImageSortAndStatus(user.getUserId(), PROFILE_TYPE, STATUS);
+
+            if (image.isPresent()) {
+                friendInfoList.add(new FriendDto.FriendInfoList(user, friend.getRelationship())
+                        .setFile(image.get().getImageUrl()));
+            } else {
+                friendInfoList.add(new FriendDto.FriendInfoList(user, friend.getRelationship()));
+            }
+        }
+        total = friendRepository.countUsersByFriendCriteria(targetId, keyword, STATUS);
+
+        FriendDto.FriendInfoListResponse result = new FriendDto.FriendInfoListResponse(
+                ExceptionCode.FRIEND_SEARCH_OK, findUser.getName(), total, friendInfoList, lastPage);
+
+        return result;
+    }
+
+    /**
+     * 캐싱 사용한 검색어를 통한 친구 목록 조회
      * @param userPrincipal 유저 본인
      * @param targetId 유저 id
      * @param keyword 검색어
      * @param lastPage 현재 페이지
      * @return 친구 목록
      */
-    // 기본 친구 목록의 첫 페이지에 캐싱 적용 -> key : targetId
-    @Cacheable(value = "FriendsListCache",  cacheManager = "redisCacheManager",
-            key = "#targetId", condition = "#keyword == null and #lastPage == 0")
+    @Cacheable(value = "FriendList",  cacheManager = "redisCacheManager", key = "#targetId",
+            condition = "#userPrincipal.getId() == #targetId and #keyword == '' and #lastPage == 0")
     public FriendDto.FriendInfoListResponse getUserFriendList2(UserPrincipal userPrincipal,
                                                                Long targetId, String keyword, int lastPage) {
 
@@ -204,21 +223,11 @@ public class FriendServiceImpl implements FriendService {
         Long total;
 
         if (userPrincipal.getId().equals(targetId)) {
-            List<Friend> objects = fetchPagesOffsetUserFriend(findUser, keyword, lastPage);
-
-            for (Friend friend : objects) {
-                User user = userRepository.findByUserIdAndStatus(friend.getUserFriendId(), STATUS).get();
-                Optional<Image> image = imageRepository.findByUserUserIdAndImageSortAndStatus(user.getUserId(), PROFILE_TYPE, STATUS);
-
-                if (image.isPresent()) {
-                    friendInfoList.add(new FriendDto.FriendInfoList(user, friend.getRelationship())
-                            .setFile(image.get().getImageUrl()));
-                } else {
-                    friendInfoList.add(new FriendDto.FriendInfoList(user, friend.getRelationship()));
-                }
+            // 친구 목록의 첫 페이지에 캐싱 적용
+            if (keyword.isBlank() && lastPage == 0) {
+                log.info("Cache key: " + targetId);
             }
-            total = friendRepository.countUsersByFriendCriteria(targetId, keyword, STATUS);
-
+            return getMyFriendList2(findUser, targetId, keyword, lastPage);
         } else {
             List<Friend> objects = fetchPagesOffsetTargetFriend(findUser, keyword, lastPage, userPrincipal.getId());
 
@@ -253,9 +262,39 @@ public class FriendServiceImpl implements FriendService {
         FriendDto.FriendInfoListResponse result = new FriendDto.FriendInfoListResponse(
                 ExceptionCode.FRIEND_SEARCH_OK, user.getName(), total, friendInfoList,
                 lastPage);
+        return result;
+    }
 
-        // 친구 목록의 첫 페이지에 캐싱 적용
-        log.info("Cache key: " + targetId.toString());
+    /**
+     * 캐싱 사용한 검색 기준이 본인인 경우
+     * @param findUser 검색한 유저
+     * @param keyword 검색어
+     * @param lastPage 현재 페이지
+     * @return 친구 목록
+     */
+    public FriendDto.FriendInfoListResponse getMyFriendList2(
+            User findUser, Long targetId, String keyword, int lastPage) {
+        List<Friend> objects = fetchPagesOffsetUserFriend(findUser, keyword, lastPage);
+
+        List<FriendDto.FriendInfoList> friendInfoList = new ArrayList<>();
+        Long total;
+
+        for (Friend friend : objects) {
+            User user = userRepository.findByUserIdAndStatus(friend.getUserFriendId(), STATUS).get();
+            Optional<Image> image = imageRepository.findByUserUserIdAndImageSortAndStatus(user.getUserId(), PROFILE_TYPE, STATUS);
+
+            if (image.isPresent()) {
+                friendInfoList.add(new FriendDto.FriendInfoList(user, friend.getRelationship())
+                        .setFile(image.get().getImageUrl()));
+            } else {
+                friendInfoList.add(new FriendDto.FriendInfoList(user, friend.getRelationship()));
+            }
+        }
+        total = friendRepository.countUsersByFriendCriteria(targetId, keyword, STATUS);
+
+        FriendDto.FriendInfoListResponse result = new FriendDto.FriendInfoListResponse(
+                ExceptionCode.FRIEND_SEARCH_OK, findUser.getName(), total, friendInfoList, lastPage);
+
         return result;
     }
 
@@ -577,7 +616,7 @@ public class FriendServiceImpl implements FriendService {
             Optional<Image> image = imageRepository.findByUserUserIdAndImageSortAndStatus(user.getUserId(), PROFILE_TYPE, STATUS);
 
             if (roomMembers.stream().anyMatch(m-> Objects.equals(m.getUser().getUserId(), friend.getUserFriendId()))) {
-                
+
                 if (image.isPresent()) {
                     friendInfoList.add(new FriendDto.FriendRoomInfoList(user,0).setFile(image.get().getImageUrl()));
                 } else {

@@ -14,7 +14,7 @@ public class FriendController2 {
 
     private final FriendService friendService;
 
-    @GetMapping("/search") // 친구 중 검색 : 기준 userId 추가
+    @GetMapping("/search") // 친구 목록 조회
     public FriendDto.FriendInfoListResponse getUserFriendList(@CurrentUser UserPrincipal userPrincipal,
                                                               @RequestParam Long userId,
                                                               @RequestParam String keyword,
