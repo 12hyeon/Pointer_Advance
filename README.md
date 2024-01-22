@@ -60,13 +60,14 @@ POINTER는 10대를 위한 소통 플랫폼입니다. <br>
 | **User API** | POST | `/api/v1/users/reissue`                   | 토큰 재발급      | 
 | **User API**| PATCH | `/api/v1/users/marketing`                  | 마케팅 정보 수정           |
 | **User API**| DELETE | `/api/v1/users/resign`                  | 회원 탈퇴           |
-| **Auth API**| POST | `/api/v1/auth/login`                  | 카카오 소셜 로그인           |
 | **User API**| GET | `/api/v1/users/search`          | 유저 검색    |
+| **User API**| PATCH | `/api/v1/users/update/info`          | 유저 정보 수정    |
+| **Auth API**| POST | `/api/v1/auth/login`                  | 카카오 소셜 로그인           |
 | **Friend API**| GET | `/api/v1/friends/search`          | 친구 검색    |
 | **Friend API**| POST | `/api/v1/friends/request`          | 친구 요청    |
-| **Friend API**| PUT | `/api/v1/friends/block/search`          | 요청 취소    |
+| **Friend API**| GET | `/api/v1/friends/block/search`          | 차단 친구 검색    |
 | **Friend API**| POST | `/api/v1/friends/accept`          | 친구 수락    |
-| **Friend API**| PUT | `/api/v1/friends`          | 친구 취소    |
+| **Friend API**| PUT | `/api/v1/friends/request`          | 친구 요청 취소    |
 | **Friend API**| POST | `/api/v1/friends/refuse`          | 친구 거절    |
 | **Friend API**| POST | `/api/v1/friends/block`          | 친구 차단    |
 | **Friend API**| PUT | `/api/v1/friends/block`          | 친구 차단 해체   |
@@ -81,6 +82,27 @@ POINTER는 10대를 위한 소통 플랫폼입니다. <br>
 </br>
 
 ## 프로젝트-관리-및-회고
+### API v1
+- 도메인 설계
+  - 고려 사항 : 친구 관련 도메인에서는 각 유저별로 상대와 관계를 정의함으로써 다양한 형태의 관계를 정의할 수 있도록 확장성 고려
+  - 이점 : PM의 요청에 따라 차단이나 정의되지 않은 관계에 대한 정보도 빠르고 통일성 있는 방식으로 제공 가능
+- 사용자 인증 : Oauth를 통한 카카오 소셜로그인을 구현함으로써 사용자 정보의 안전성 보장 및 간편한 회원가입을 통한 하는 경험
+- 친구 목록 조회 : 
+  - 이슈 : 친구 목록 조회에서 유저 정보 필요에 따른 반복된 조인 연산에 대한 성능 저하 방지
+  - 해결방안 : 반정규화를 통해 친구 조회에서 검색에 활용되는 name에 대한 중복 허용
+  - 결과 : 유저 및 친구에 대한 검색에서 검색 속도 향상
 
-- 도메인 설계 : 친구 관련 도메인에서는 각 유저별로 상대와 관계를 정의함으로써 다양한 형태의 관계를 정의할 수 있도록 확장성을 고려해 설계하였습니다. 그에 따라 후에 PM의 요청에 따라 차단이나 정의되지 않은 관계에 대한 정보도 빠르고 통일성 있는 방식으로 제공할 수 있었습니다.
-- 사용자 인증 : Oauth를 통한 카카오 소셜로그인을 구현함으로써 사용자 정보의 안전성을 보장하는 경험을 할 수 있었습니다.
+### API v2
+- 유저 name 수정
+	- 이슈 : 변경된 name이 user 뿐만 아니라 friend 테이블에도 반영시키는 과정에서 대규모 데이터 처리가 발생
+	- 해결 방안 : batch를 이용해서 DB 부하를 낮춘 대규모 데이터 처리 
+	- 결과 : batch는 반복적인 I/O 작업을 한 번에 모아서 처리하는 것으로 쿼리 수를 줄이는 결과를 가져옴
+- 친구 목록 조회
+	- 이슈 : 조회 비용이 높은 api가 많아서 성능 향상 처리가 필요
+	- 해결 방안 : caching를 적용하여 서버 응답 속도 향상 처리
+	- 선택 이유
+			1. 친구 목록의 첫 페이지는 반복적으로 호출이 되고, 조회 비용이 높은 편
+			2. 전체 친구 목록에 비해 첫 페이지에는 30명의 친구만 존재하여 데이터가 상대적으로 적음
+			3. 친구 탈최, 친구 취소에만 영향을 받기에 변경이 적은 데이터라고 판단
+  - 결과
+    
