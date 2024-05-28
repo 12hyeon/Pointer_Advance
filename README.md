@@ -5,10 +5,11 @@
 ## 목차
 - [개요](#개요)
 - [사용기술](#사용기술)
-- [TIL](#프로젝트-관리)
+- [프로젝트 관리](#프로젝트-관리)
 - [API](#API)
 - [ERD](#ERD)
-
+- [시스템 구성도](#시스템-구성도)
+- [TIL](#TIL)
 
 
 ## 개요
@@ -26,9 +27,7 @@ POINTER는 10대를 위한 소통 플랫폼입니다. <br>
 ### 개발환경
 
 [![Java](https://img.shields.io/badge/java-007396?&logo=java&logoColor=white)](https://www.java.com)
-[![Spring](https://img.shields.io/badge/spring-6DB33F
-
-&logo=spring&logoColor=white)](https://spring.io)
+[![Spring](https://img.shields.io/badge/spring-6DB33F&logo=spring&logoColor=white)](https://spring.io)
 [![Spring Boot](https://img.shields.io/badge/Spring_boot-6DB33F?&logo=Spring%20boot&logoColor=white)](https://spring.io/projects/spring-boot)
 [![Gradle](https://img.shields.io/badge/gradle-02303A?&logo=gradle&logoColor=white)](https://gradle.org)
 [![Spring JPA](https://img.shields.io/badge/Spring%20JPA-6DB33F?&logo=Spring%20JPA&logoColor=white)](https://spring.io/projects/spring-data-jpa)
@@ -44,25 +43,14 @@ POINTER는 10대를 위한 소통 플랫폼입니다. <br>
 <img src="https://img.shields.io/badge/aws-232F3E?&logo=amazonaws&logoColor=white"> <img src="https://img.shields.io/badge/ec2-FF9900?&logo=amazonec2&logoColor=white">
 <img src="https://img.shields.io/badge/rds-527FFF?&logo=amazonrds&logoColor=white"> <img src="https://img.shields.io/badge/beanstalk-232F3E?&logo=awselasticbeanstalk&logoColor=white"> <img src="https://img.shields.io/badge/github-181717?&logo=github&logoColor=white">
 
-## 프로젝트-관리
-| API v1 |                          |
-| -------|--------------------------|
-| 도메인 설계 | - 고려 사항 : 친구 도메인에서 유저별로 상대와 관계를 정의함으로써 다양한 형태의 관계를 정의에 대한 확장성 고려<br>- 이점 : PM의 요청에 따라 차단이나 정의되지 않은 관계에 대한 정보도 빠르고 통일성 있는 방식으로 제공 가능 |
-| 사용자 인증 | - Oauth를 통한 카카오 소셜로그인을 구현함으로써 사용자 정보의 안전성 보장 및 간편한 회원가입을 통한 하는 경험 |
-| 친구 목록 조회 | - 이슈 : 친구 목록 조회에서 유저 정보 필요에 따른 반복된 조인 연산에 대한 성능 저하 방지<br>- 해결방안 : 반정규화를 통해 친구 조회에서 검색에 활용되는 name에 대한 중복 허용<br>- 결과 : 유저 및 친구에 대한 검색에서 검색 속도 향상 |
-
-| API v2 |                          |
-| -------|--------------------------|
-| 유저 name 수정 | - 이슈 : 변경된 name이 user 뿐만 아니라 friend 테이블에도 반영시키는 과정에서 대규모 데이터 처리가 발생<br>- 해결 방안 : batch를 이용해서 DB 부하를 낮춘 대규모 데이터 처리<br>- 결과 : batch는 반복적인 I/O 작업을 한 번에 모아서 처리하는 것으로 쿼리 수를 줄이는 결과를 가져옴 |
-| 친구 목록 조회 | - 이슈 : 조회 비용이 높은 api가 많아서 성능 향상 처리가 필요<br>- 해결 방안 : caching를 적용하여 서버 응답 속도 향상 처리<br><br>- 선택 이유 <br> 1. 친구 목록의 첫 페이지는 반복적으로 호출이 되고, 조회 비용이 높은 편<br>  2. 전체 친구 목록에 비해 첫 페이지에는 30명의 친구만 존재하여 데이터가 상대적으로 적음<br>  3. 친구 탈퇴, 친구 취소에만 영향을 받기에 변경이 적은 데이터라고 판단<br><br> |
-
-### 프로젝트 v1 작업 관리
-  ![image](https://github.com/12hyeon/Pointer_Advance/assets/67951802/1d90d0b2-3cbe-4dda-9acd-0906c1e46fd9)
-</br>
-
 ### 협업 도구
 <img src="https://img.shields.io/badge/discord-4A154B?&logo=discord&logoColor=white"> <img src="https://img.shields.io/badge/notion-000000?&logo=notion&logoColor=white"> <img src="https://img.shields.io/badge/zep-25c3d1?&logo=zep&logoColor=white">
 </br>
+
+## 프로젝트 관리
+  ![image](https://github.com/12hyeon/Pointer_Advance/assets/67951802/1d90d0b2-3cbe-4dda-9acd-0906c1e46fd9)
+</br>
+
 
 ## API
 
@@ -94,3 +82,21 @@ POINTER는 10대를 위한 소통 플랫폼입니다. <br>
 ## ERD
 ![image](https://github.com/12hyeon/Pointer_Advance/assets/67951802/674666e1-b8d1-40bc-a2ee-1c168298e2cd)
 </br>
+
+## 시스템 구성도
+![image](https://github.com/12hyeon/Pointer_Advance/assets/67951802/1c9e3630-8220-42ad-893b-c497125f3a51)
+</br>
+
+## TIL
+| API v1 |                          |
+| -------|--------------------------|
+| 도메인 설계 | - 고려 사항 : 친구 도메인에서 유저별로 상대와 관계를 정의함으로써 다양한 형태의 관계를 정의에 대한 확장성 고려<br>- 이점 : PM의 요청에 따라 차단이나 정의되지 않은 관계에 대한 정보도 빠르고 통일성 있는 방식으로 제공 가능 |
+| 사용자 인증 | - Oauth를 통한 카카오 소셜로그인을 구현함으로써 사용자 정보의 안전성 보장 및 간편한 회원가입을 통한 하는 경험 |
+| 친구 목록 조회 | - 이슈 : 친구 목록 조회에서 유저 정보 필요에 따른 반복된 조인 연산에 대한 성능 저하 방지<br>- 해결방안 : 반정규화를 통해 친구 조회에서 검색에 활용되는 name에 대한 중복 허용<br>- 결과 : 유저 및 친구에 대한 검색에서 검색 속도 향상 |
+
+| API v2 |                          |
+| -------|--------------------------|
+| 유저 name 수정 | - 이슈 : 변경된 name이 user 뿐만 아니라 friend 테이블에도 반영시키는 과정에서 대규모 데이터 처리가 발생<br>- 해결 방안 : batch를 이용해서 DB 부하를 낮춘 대규모 데이터 처리<br>- 결과 : batch는 반복적인 I/O 작업을 한 번에 모아서 처리하는 것으로 쿼리 수를 줄이는 결과를 가져옴 |
+| 친구 목록 조회 | - 이슈 : 조회 비용이 높은 api가 많아서 성능 향상 처리가 필요<br>- 해결 방안 : caching를 적용하여 서버 응답 속도 향상 처리<br><br>- 선택 이유 <br> 1. 친구 목록의 첫 페이지는 반복적으로 호출이 되고, 조회 비용이 높은 편<br>  2. 전체 친구 목록에 비해 첫 페이지에는 30명의 친구만 존재하여 데이터가 상대적으로 적음<br>  3. 친구 탈퇴, 친구 취소에만 영향을 받기에 변경이 적은 데이터라고 판단<br><br> |
+
+
