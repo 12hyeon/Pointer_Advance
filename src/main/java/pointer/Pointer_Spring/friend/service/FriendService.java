@@ -9,8 +9,9 @@ public interface FriendService {
 
     //UserDto.UserListResponse getUserList(UserPrincipal userPrincipal, FriendDto.FindFriendDto dto);
     UserDto.UserInfoListResponse getUserInfoList(UserPrincipal userPrincipal, String keyword, int lastPage);
-    FriendDto.FriendInfoListResponse getUserFriendList(UserPrincipal userPrincipal, Long targetId, String keyword, int lastPage);
     FriendDto.FriendInfoListResponse getUserBlockFriendList(UserPrincipal userPrincipal, String keyword, int lastPage);
+    FriendDto.FriendInfoListResponse getUserFriendList(UserPrincipal userPrincipal, Long targetId, String keyword, int lastPage);
+    FriendDto.FriendInfoListResponse getUserFriendList2(UserPrincipal userPrincipal, Long targetId, String keyword, int lastPage);
 
     ResponseFriend requestFriend(UserPrincipal userPrincipal, FriendDto.RequestFriendDto dto);
     ResponseFriend acceptFriend(UserPrincipal userPrincipal, FriendDto.RequestFriendDto dto);

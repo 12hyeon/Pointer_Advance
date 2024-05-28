@@ -1,5 +1,8 @@
 package pointer.Pointer_Spring.validation;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import java.util.Arrays;
 
 import static pointer.Pointer_Spring.validation.HttpStatus.*;
@@ -189,7 +192,10 @@ public enum ExceptionCode {
     private final String code;
     private final String message;
 
-    ExceptionCode(HttpStatus status, String code, String message) {
+    @JsonCreator
+    ExceptionCode(@JsonProperty("status") HttpStatus status,
+                  @JsonProperty("code") String code,
+                  @JsonProperty("message") String message) {
         this.status = status;
         this.code = code;
         this.message = message;

@@ -92,7 +92,7 @@ public class RoomServiceImpl implements RoomService {
                         return new ListRoom(roomMember, latestQuestion, msgForTopUserNm, isVoted, questionCreateDate);
                     })
                     .sorted(Comparator.comparing(room -> room.getLimitedAt(), Comparator.reverseOrder()))
-                    .toList();
+                    .collect(Collectors.toList());
         } else {
             roomListDto = roomMemberRepository.findAllByUserUserIdAndRoom_StatusEqualsAndStatusOrderByRoom_UpdatedAtAsc(userId, STATUS, STATUS).stream()
                     .filter(roomMember -> {
@@ -161,7 +161,7 @@ public class RoomServiceImpl implements RoomService {
                 );
 
         List<RoomMemberResopnose> roomMemberResopnoseList = roomMemberRepository.findAllByRoomAndStatus(foundRoom,STATUS).stream()
-                .map(RoomMemberResopnose::new).toList();
+                .map(RoomMemberResopnose::new).collect(Collectors.toList());
         String targetUserPrivateRoomNm = roomMemberRepository.findByRoom_RoomIdAndUser_UserIdAndStatus(foundRoom.getRoomId(), targetUserId, STATUS)
                 .orElseThrow(()->new CustomException(ExceptionCode.ROOMMEMBER_NOT_EXIST)).getPrivateRoomNm();
         return new ResponseRoom(ExceptionCode.ROOM_FOUND_OK, new DetailResponse(foundRoom, targetUserPrivateRoomNm, latestQuestion, roomMemberResopnoseList, latestQuestion.getCreatedAt().plusDays(1)));
@@ -205,7 +205,7 @@ public class RoomServiceImpl implements RoomService {
         questionRepository.save(question);
 
         List<RoomMemberResopnose> roomMemberResopnoseList = roomMemberRepository.findAllByRoomAndStatus(savedRoom, STATUS).stream()
-                .map(RoomMemberResopnose::new).toList();
+                .map(RoomMemberResopnose::new).collect(Collectors.toList());
 
         Optional<Question> o = questionRepository.findTopByRoomRoomIdAndStatusOrderByIdDesc(savedRoom.getRoomId(), STATUS);
         LocalDateTime questionCreateDate = LocalDateTime.now();
@@ -319,7 +319,7 @@ public class RoomServiceImpl implements RoomService {
     public ResponseRoom getInviteMembers(Long roomId){
         List<RoomMember> roomMember = roomMemberRepository.findAllByRoom_RoomIdAndStatusEquals(roomId, 1);
         List<RoomMemberResopnose> roomMemberResopnoseList = roomMember.stream()
-                .map(RoomMemberResopnose::new).toList();
+                .map(RoomMemberResopnose::new).collect(Collectors.toList());
         return new ResponseRoom(ExceptionCode.ROOMMEMBER_GET_SUCCESS, roomMemberResopnoseList);
     }
 
@@ -334,7 +334,7 @@ public class RoomServiceImpl implements RoomService {
         List<Friend> friendList = fetchPagesOffset(userId, currentPage, pageSize, kwd);//status가 1인 것만 가져옴
 
         //roomMember에 존재하는가 + 30개 방 개수가 넘지 않았는가
-        //List<User> userList =  friendList.stream().map(friend -> userRepository.findById(friend.getUserFriendId()).get()).toList();
+        //List<User> userList =  friendList.stream().map(friend -> userRepository.findById(friend.getUserFriendId()).get()).collect(Collectors.toList());
         List<IsInviteMember> roomMemberResponoseList = new ArrayList<>();
 
         for(Friend f : friendList){
